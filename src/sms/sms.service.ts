@@ -66,6 +66,23 @@ export class SmsService {
   }
 
   /**
+   * Send SMS directly using the configured provider
+   */
+  async sendSms(phoneNumber: string, message: string): Promise<boolean> {
+    if (!this.config.enabled) {
+      this.logger.debug('SMS disabled - skipping SMS send');
+      return false;
+    }
+
+    try {
+      return await this.provider.sendSms(phoneNumber, message);
+    } catch (error) {
+      this.logger.error(`Error sending SMS to ${phoneNumber}: ${error.message}`, error.stack);
+      return false;
+    }
+  }
+
+  /**
    * Send SMS notification when user submits a document request
    */
   async sendRequestSubmittedNotification(request: DocumentRequest): Promise<boolean> {

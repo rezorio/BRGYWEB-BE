@@ -195,11 +195,13 @@ export class OTPController {
     // Get OTP details to send SMS
     try {
       const otpDetails = await this.otpService.getOTPDetails(otpId);
-      await this.otpSmsService.sendOTP(
-        otpDetails.phoneNumber,
-        result.code,
-        otpDetails.type === 'registration' ? 'registration' : 'password reset',
-      );
+      if (otpDetails.phoneNumber) {
+        await this.otpSmsService.sendOTP(
+          otpDetails.phoneNumber,
+          result.code,
+          otpDetails.type === 'registration' ? 'registration' : 'password reset',
+        );
+      }
     } catch (error) {
       console.error('Failed to send OTP SMS:', error);
       // Continue even if SMS fails
