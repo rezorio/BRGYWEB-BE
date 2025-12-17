@@ -10,21 +10,33 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy via SSH
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install and Build
+        run: |
+          npm install
+          npm run build
+
+      - name: Copy files to Linode
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # We send the built dist folder and package files
+          source: "dist/*,package.json,package-lock.json"
+          target: "/var/www/brgybagongbarrio.site/backend"
+
+      - name: Restart PM2 via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            mkdir -p /var/www/brgybagongbarrio.site/backend
-            cd /var/www/my-project/backend
-            # If repo doesn't exist, clone it; otherwise pull latest
-            if [ ! -d ".git" ]; then
-              git clone https://github.com/rezorio/BRGYWEB-BE.git .
-            else
-              git pull origin main
-            fi
-            npm install
-            npm run build
+            cd /var/www/brgybagongbarrio.site/backend
+            npm install --production
             pm2 restart nest-api || pm2 start dist/main.js --name nest-api
