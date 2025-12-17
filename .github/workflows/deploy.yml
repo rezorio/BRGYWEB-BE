@@ -29,6 +29,7 @@ jobs:
           # We send the built dist folder and package files
           source: "dist/*,package.json,package-lock.json"
           target: "/var/www/brgybagongbarrio.site/backend"
+          strip_components: 1
 
       - name: Restart PM2 via SSH
         uses: appleboy/ssh-action@v1.0.3
